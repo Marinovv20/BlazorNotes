@@ -1,0 +1,15 @@
+﻿@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<button @onclick="EditNote" class="btn btn-primary">Edit Note</button>
+
+@code {
+
+    [Parameter]
+    public int Id{ get; set; }
+
+    void EditNote()
+    {
+        NavigationManager.NavigateTo($"/edit-note/{Id}");
+    }
+}

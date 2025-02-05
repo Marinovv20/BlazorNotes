@@ -1,0 +1,74 @@
+﻿@page "/edit-note"
+@page "/edit-note/{id:int}"
+@using BlazorNotes.Shared.Services
+@inject INoteService NoteService
+@inject NavigationManager NavigationManager
+@using BlazorNotes.Shared.Models
+@rendermode InteractiveWebAssembly
+
+@if (Id == null)
+{
+	<h3>Create Note</h3>
+}
+
+else
+{
+	<h3>Edit @note.Title and @note.Description</h3>
+}
+
+
+<EditForm Model="note" OnSubmit="HandleSubmit">
+	<div>
+		<label for="title">Title</label>
+		<InputText id="title" @bind-Value="note.Title" />
+	</div>
+
+	<div>
+		<label for="description">Description</label>
+		<InputText id="description" @bind-Value="note.Description" />
+	</div>
+
+	<button type="submit" class="btn btn-primary">Submit</button>
+	@if (Id != null)
+	{
+		<button @onclick="DeleteNote" type="button" class="btn btn-danger">Delete</button>
+	}
+</EditForm>
+
+@code {
+	[Parameter]
+	public int? Id { get; set; }
+
+	Note note { get; set; } = new Note { 
+		Title = string.Empty,
+		Description = string.Empty};
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Id.HasValue)
+		{
+			// Only try to fetch the note if Id has a value
+			var existingNote = await NoteService.GetNoteById((int)Id);
+			note = existingNote ?? new Note { Title = "", Description = "" }; // In case the note is not found
+		}
+	}
+
+	async Task HandleSubmit()
+	{
+		if (Id == null)
+		{
+			await NoteService.AddNote(note);
+		}
+		else
+		{
+			await NoteService.EditNote((int)Id, note);
+		}
+		NavigationManager.NavigateTo("/notes");
+	}
+
+	async Task DeleteNote()
+	{
+		await NoteService.DeleteNote((int)Id);
+		NavigationManager.NavigateTo("/notes");
+	}
+}
